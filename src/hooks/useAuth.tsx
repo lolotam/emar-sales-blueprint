@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Role, Profile } from "@/integrations/supabase/schema";
@@ -42,7 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Query the user's profile
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('name, email, roles!inner(role_name)')
+        .select('name, email, roles(role_name)')
         .eq('id', uid)
         .single();
 
