@@ -4,53 +4,47 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
-  const { user, loading, reloadUser } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Add debugging
     console.log("Dashboard render state:", { 
       loading, 
       user: user ? { ...user, id: "redacted" } : null 
     });
     
-    // Only redirect after loading is complete
-    if (!loading) {
-      if (!user) {
-        console.log("No user found, redirecting to login");
-        navigate("/login");
-      } else if (user.role) {
-        console.log("Redirecting based on role:", user.role);
-        // Redirect to role-specific dashboard if available
-        switch (user.role) {
-          case 'Admin':
-            navigate("/dashboard/admin");
-            break;
-          case 'Salesman':
-            navigate("/dashboard/salesman");
-            break;
-          case 'Accountant':
-            navigate("/dashboard/accountant");
-            break;
-          case 'Warehouse':
-            navigate("/dashboard/warehouse");
-            break;
-          default:
-            console.log("Unknown role:", user.role);
-        }
-      } else {
-        console.log("User has no role:", user);
+    // Only redirect after loading is complete and user is available
+    if (!loading && user && user.role) {
+      console.log("Redirecting based on role:", user.role);
+      // Redirect to role-specific dashboard
+      switch (user.role) {
+        case 'Admin':
+          navigate("/dashboard/admin", { replace: true });
+          break;
+        case 'Salesman':
+          navigate("/dashboard/salesman", { replace: true });
+          break;
+        case 'Accountant':
+          navigate("/dashboard/accountant", { replace: true });
+          break;
+        case 'Warehouse':
+          navigate("/dashboard/warehouse", { replace: true });
+          break;
+        default:
+          console.log("Unknown role:", user.role);
+          toast({
+            title: "Role not recognized",
+            description: "Contact administrator for access rights.",
+            variant: "destructive"
+          });
       }
     }
   }, [user, loading, navigate]);
 
-  const handleRefreshUser = async () => {
-    console.log("Manually refreshing user data");
-    await reloadUser();
-    toast({ title: "User data refreshed", description: "Your profile data has been updated." });
+  const handleRefreshUser = () => {
+    window.location.reload();
   };
 
   if (loading) {
@@ -62,7 +56,14 @@ export default function DashboardPage() {
     );
   }
   
-  if (!user) return <div className="text-center py-12">Please log in to access the dashboard</div>;
+  if (!user) {
+    return (
+      <div className="text-center py-12">
+        <p className="mb-4">Please log in to access the dashboard</p>
+        <Button onClick={() => navigate("/login")}>Go to Login</Button>
+      </div>
+    );
+  }
   
   return (
     <div className="max-w-2xl mx-auto py-12 text-center">
@@ -78,10 +79,10 @@ export default function DashboardPage() {
       <div className="mt-8 p-6 border rounded-lg bg-gray-50">
         <h2 className="text-xl font-semibold mb-4">Your Dashboard</h2>
         <p className="mb-4">You will be redirected to your role-specific dashboard shortly.</p>
-        <p className="mb-6">If you're not automatically redirected, please visit your dashboard using the links below:</p>
+        <p className="mb-6">If you're not automatically redirected, please use the links below:</p>
         
         <div className="flex flex-col gap-3 max-w-xs mx-auto">
-          {user.role === 'Admin' && (
+          {(user.role === 'Admin') && (
             <Button onClick={() => navigate("/dashboard/admin")} className="w-full">
               Admin Dashboard
             </Button>
@@ -105,8 +106,8 @@ export default function DashboardPage() {
             </Button>
           )}
           
-          <Button onClick={handleRefreshUser} variant="outline" className="mt-4">
-            Refresh User Data
+          <Button onClick={handleRefreshUser} variant="outline" className="mt-4 w-full">
+            Refresh Page
           </Button>
         </div>
       </div>

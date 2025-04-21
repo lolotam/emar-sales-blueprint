@@ -41,8 +41,14 @@ const App = () => (
             <Route path="/login" element={<LoginForm />} />
             <Route path="/forgot-password" element={<ForgotPasswordForm />} />
             
-            {/* Protected dashboard routes */}
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            {/* Main dashboard route - handles redirects based on user role */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            
+            {/* Role-specific dashboard routes */}
             <Route path="/dashboard/admin" element={
               <ProtectedRoute roles={["Admin"]}>
                 <AdminDashboard />
@@ -64,7 +70,7 @@ const App = () => (
               </ProtectedRoute>
             } />
             
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

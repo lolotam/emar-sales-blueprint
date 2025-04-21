@@ -15,11 +15,10 @@ export default function ProtectedRoute({ children, roles }: ProtectedRouteProps)
 
   // Force reload user data when entering protected routes
   useEffect(() => {
-    // Always reload user data when entering a protected route
     if (!loading) {
       reloadUser();
     }
-  }, [loading, reloadUser]);
+  }, [location.pathname, loading, reloadUser]);
 
   // Add debugging logs
   console.log("ProtectedRoute state:", { 
@@ -30,6 +29,7 @@ export default function ProtectedRoute({ children, roles }: ProtectedRouteProps)
   });
 
   if (loading) {
+    console.log("Loading user data...");
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -48,26 +48,23 @@ export default function ProtectedRoute({ children, roles }: ProtectedRouteProps)
     console.log(`User role ${user.role} not in required roles [${roles.join(", ")}]`);
     
     // Redirect to the appropriate dashboard based on role
-    if (user.role === "Admin") {
-      console.log("Redirecting to Admin dashboard");
-      return <Navigate to="/dashboard/admin" replace />;
+    switch (user.role) {
+      case "Admin":
+        console.log("Redirecting to Admin dashboard");
+        return <Navigate to="/dashboard/admin" replace />;
+      case "Salesman":
+        console.log("Redirecting to Salesman dashboard");
+        return <Navigate to="/dashboard/salesman" replace />;
+      case "Accountant":
+        console.log("Redirecting to Accountant dashboard");
+        return <Navigate to="/dashboard/accountant" replace />;
+      case "Warehouse":
+        console.log("Redirecting to Warehouse dashboard");
+        return <Navigate to="/dashboard/warehouse" replace />;
+      default:
+        console.log("Role doesn't match specific dashboard, redirecting to main dashboard");
+        return <Navigate to="/dashboard" replace />;
     }
-    if (user.role === "Salesman") {
-      console.log("Redirecting to Salesman dashboard");
-      return <Navigate to="/dashboard/salesman" replace />;
-    }
-    if (user.role === "Accountant") {
-      console.log("Redirecting to Accountant dashboard");
-      return <Navigate to="/dashboard/accountant" replace />;
-    }
-    if (user.role === "Warehouse") {
-      console.log("Redirecting to Warehouse dashboard");
-      return <Navigate to="/dashboard/warehouse" replace />;
-    }
-    
-    // Fallback to main dashboard if role doesn't match any specific dashboard
-    console.log("Role doesn't match specific dashboard, redirecting to main dashboard");
-    return <Navigate to="/dashboard" replace />;
   }
 
   // If we get here, user is authenticated and has required role (if specified)
