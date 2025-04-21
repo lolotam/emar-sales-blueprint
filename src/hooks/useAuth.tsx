@@ -29,10 +29,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchProfile = async (uid: string): Promise<AuthUser | null> => {
     try {
-      const { error: tableCheckError } = await supabase.rpc('get_schema_version');
+      // Check if database is properly set up by calling the get_user_role function
+      const { error: tableCheckError } = await supabase.rpc('get_user_role', { user_id: uid });
       
       if (tableCheckError) {
-        console.log('Setting up database tables...');
+        console.log('Database setup check failed:', tableCheckError);
       }
       
       const { data: profile, error } = await supabase
