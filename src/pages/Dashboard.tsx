@@ -10,15 +10,21 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Redirect if not authenticated
-    if (!loading && !user) {
-      navigate("/login");
-    } else if (user?.role) {
-      // Redirect to role-specific dashboard if available
-      if (user.role === 'Admin') navigate("/dashboard/admin");
-      else if (user.role === 'Salesman') navigate("/dashboard/salesman");
-      else if (user.role === 'Accountant') navigate("/dashboard/accountant");
-      else if (user.role === 'Warehouse') navigate("/dashboard/warehouse");
+    // Only check after loading is complete
+    if (!loading) {
+      if (!user) {
+        // Redirect to login if not authenticated
+        navigate("/login");
+      } else if (user.role) {
+        console.log("Redirecting based on role:", user.role);
+        // Redirect to role-specific dashboard if available
+        if (user.role === 'Admin') navigate("/dashboard/admin");
+        else if (user.role === 'Salesman') navigate("/dashboard/salesman");
+        else if (user.role === 'Accountant') navigate("/dashboard/accountant");
+        else if (user.role === 'Warehouse') navigate("/dashboard/warehouse");
+      } else {
+        console.log("User has no role or role not recognized:", user);
+      }
     }
   }, [user, loading, navigate]);
 
@@ -27,8 +33,15 @@ export default function DashboardPage() {
     toast({ title: "User data refreshed", description: "Your profile data has been updated." });
   };
 
-  if (loading) return <div className="text-center py-12">Loading...</div>;
-  if (!user) return <div className="text-center py-12">Unauthorized</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  if (!user) return <div className="text-center py-12">Please log in to access the dashboard</div>;
   
   return (
     <div className="max-w-2xl mx-auto py-12 text-center">

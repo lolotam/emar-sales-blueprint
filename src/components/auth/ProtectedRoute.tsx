@@ -15,6 +15,7 @@ export default function ProtectedRoute({ children, roles }: ProtectedRouteProps)
 
   // Force reload user data when entering protected routes
   useEffect(() => {
+    // Only reload if we don't have a user yet
     if (!loading && !user) {
       reloadUser();
     }
@@ -33,8 +34,10 @@ export default function ProtectedRoute({ children, roles }: ProtectedRouteProps)
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // If roles are specified and the user doesn't have the required role
+  // If roles are specified and user doesn't have the required role
   if (roles && user.role && !roles.includes(user.role)) {
+    console.log("User role:", user.role, "Required roles:", roles);
+    
     // Redirect to the appropriate dashboard based on role
     if (user.role === "Admin") return <Navigate to="/dashboard/admin" replace />;
     if (user.role === "Salesman") return <Navigate to="/dashboard/salesman" replace />;
