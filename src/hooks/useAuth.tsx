@@ -1,3 +1,4 @@
+
 import { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Role, Profile } from "@/integrations/supabase/schema";
@@ -37,7 +38,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('name, email, roles(role_name)')
+        .select('name, email, role_id')
         .eq('id', uid)
         .single();
 
@@ -46,14 +47,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return null;
       }
 
+      // Get role name from role_id
+      const { data: roleData, error: roleError } = await supabase
+        .from('roles')
+        .select('role_name')
+        .eq('id', profile.role_id)
+        .single();
+
       let roleName: Role | null = null;
       
-      if (profile.roles) {
-        if (Array.isArray(profile.roles) && profile.roles.length > 0) {
-          roleName = profile.roles[0].role_name as Role;
-        } else if (typeof profile.roles === 'object') {
-          roleName = (profile.roles as any).role_name as Role;
-        }
+      if (!roleError && roleData) {
+        roleName = roleData.role_name as Role;
       }
 
       return {

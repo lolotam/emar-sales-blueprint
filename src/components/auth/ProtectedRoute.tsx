@@ -1,5 +1,5 @@
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Role } from "@/integrations/supabase/schema";
@@ -10,8 +10,15 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children, roles }: ProtectedRouteProps) {
-  const { user, loading } = useAuth();
+  const { user, loading, reloadUser } = useAuth();
   const location = useLocation();
+
+  // Force reload user data when entering protected routes
+  useEffect(() => {
+    if (!loading && !user) {
+      reloadUser();
+    }
+  }, [loading, user, reloadUser]);
 
   if (loading) {
     return (
