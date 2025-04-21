@@ -1,3 +1,4 @@
+
 import { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Role, Profile } from "@/integrations/supabase/schema";
@@ -50,10 +51,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return null;
       }
 
+      // Fix the role access - roles is now an object with role_name property
+      const roleName = profile.roles ? profile.roles.role_name as Role : null;
+
       return {
         id: uid,
         email: profile.email,
-        role: profile.roles?.role_name as Role || null,
+        role: roleName,
         name: profile.name,
       };
     } catch (error) {
