@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Role, Profile } from "@/integrations/supabase/schema";
