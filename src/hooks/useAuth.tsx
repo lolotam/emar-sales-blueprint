@@ -1,3 +1,4 @@
+
 import { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Role, Profile } from "@/integrations/supabase/schema";
@@ -111,6 +112,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
+        // Special handling for email confirmation error
+        if (error.message.includes("Email not confirmed") || 
+            error.message.includes("Invalid login credentials") ||
+            error.message.includes("access_denied")) {
+          return { error: "Email not confirmed or invalid credentials. Please check your email for a confirmation link." };
+        }
         return { error: error.message };
       }
       
