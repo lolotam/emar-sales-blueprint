@@ -18,7 +18,14 @@ import AccountantDashboard from "@/pages/dashboard/AccountantDashboard";
 import WarehouseDashboard from "@/pages/dashboard/WarehouseDashboard";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

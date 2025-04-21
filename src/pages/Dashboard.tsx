@@ -4,39 +4,60 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
   const { user, loading, reloadUser } = useAuth();
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Only check after loading is complete
+    // Add debugging
+    console.log("Dashboard render state:", { 
+      loading, 
+      user: user ? { ...user, id: "redacted" } : null 
+    });
+    
+    // Only redirect after loading is complete
     if (!loading) {
       if (!user) {
-        // Redirect to login if not authenticated
+        console.log("No user found, redirecting to login");
         navigate("/login");
       } else if (user.role) {
         console.log("Redirecting based on role:", user.role);
         // Redirect to role-specific dashboard if available
-        if (user.role === 'Admin') navigate("/dashboard/admin");
-        else if (user.role === 'Salesman') navigate("/dashboard/salesman");
-        else if (user.role === 'Accountant') navigate("/dashboard/accountant");
-        else if (user.role === 'Warehouse') navigate("/dashboard/warehouse");
+        switch (user.role) {
+          case 'Admin':
+            navigate("/dashboard/admin");
+            break;
+          case 'Salesman':
+            navigate("/dashboard/salesman");
+            break;
+          case 'Accountant':
+            navigate("/dashboard/accountant");
+            break;
+          case 'Warehouse':
+            navigate("/dashboard/warehouse");
+            break;
+          default:
+            console.log("Unknown role:", user.role);
+        }
       } else {
-        console.log("User has no role or role not recognized:", user);
+        console.log("User has no role:", user);
       }
     }
   }, [user, loading, navigate]);
 
   const handleRefreshUser = async () => {
+    console.log("Manually refreshing user data");
     await reloadUser();
     toast({ title: "User data refreshed", description: "Your profile data has been updated." });
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+        <p className="text-gray-600">Loading dashboard...</p>
       </div>
     );
   }
