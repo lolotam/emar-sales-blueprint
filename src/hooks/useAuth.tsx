@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Role, Profile } from "@/integrations/supabase/schema";
@@ -27,19 +26,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch the user profile data after authentication
   const fetchProfile = async (uid: string): Promise<AuthUser | null> => {
     try {
-      // Create the profiles table if needed (this would normally be done via Supabase Studio or migration)
-      // This is a workaround for development to ensure the table exists
       const { error: tableCheckError } = await supabase.rpc('get_schema_version');
       
       if (tableCheckError) {
         console.log('Setting up database tables...');
-        // This won't actually execute in production as RPC functions need to be created in Supabase
       }
       
-      // Query the user's profile
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('name, email, roles(role_name)')
@@ -51,15 +45,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return null;
       }
 
-      // Access role correctly - roles could be an array or a single object depending on the join
       let roleName: Role | null = null;
       
       if (profile.roles) {
-        // Check if roles is an array or a single object
         if (Array.isArray(profile.roles) && profile.roles.length > 0) {
           roleName = profile.roles[0].role_name as Role;
         } else if (typeof profile.roles === 'object') {
-          roleName = profile.roles.role_name as Role;
+          roleName = (profile.roles as any).role_name as Role;
         }
       }
 
@@ -99,7 +91,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     reloadUser();
     
-    // Subscribe to auth state changes
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         const profile = await fetchProfile(session.user.id);
@@ -110,7 +101,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     });
     
-    // Cleanup function to remove listener
     return () => {
       listener?.subscription.unsubscribe();
     };
@@ -124,7 +114,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error: error.message };
       }
       
-      // User data and session will be handled by the onAuthStateChange listener
       return {};
     } catch (error: any) {
       return { error: error.message || 'Login failed' };
@@ -133,18 +122,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signup: AuthContextType["signup"] = async ({ name, email, password, role }) => {
     try {
-      // Create user in Supabase Auth
       const { data, error } = await supabase.auth.signUp({ email, password });
       
       if (error || !data.user) {
         return { error: error?.message ?? "Unable to register." };
       }
       
-      // Get role ID - for demonstration, we assume role name equals role ID
-      // In a real app, you'd query the roles table first
       const roleId = role.toLowerCase();
       
-      // Create profile record
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -159,7 +144,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error: profileError.message };
       }
       
-      // User data will be set by the onAuthStateChange listener
       toast({
         title: "Account created",
         description: "Your account has been created successfully.",
