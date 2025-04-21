@@ -51,8 +51,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return null;
       }
 
-      // Fix the role access - roles is now an object with role_name property
-      const roleName = profile.roles ? profile.roles.role_name as Role : null;
+      // Access role correctly - roles could be an array or a single object depending on the join
+      let roleName: Role | null = null;
+      
+      if (profile.roles) {
+        // Check if roles is an array or a single object
+        if (Array.isArray(profile.roles) && profile.roles.length > 0) {
+          roleName = profile.roles[0].role_name as Role;
+        } else if (typeof profile.roles === 'object') {
+          roleName = profile.roles.role_name as Role;
+        }
+      }
 
       return {
         id: uid,
